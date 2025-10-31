@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Dashboard</title>
+    <style>
+      :root{--bg:#f3f6fb;--card:#fff;--accent:#2563eb}
+      body{font-family:Segoe UI,Roboto,Arial;margin:0;background:linear-gradient(180deg,var(--bg),#eef4ff);min-height:100vh}
+      header{background:#fff;padding:14px 20px;box-shadow:0 4px 12px rgba(2,6,23,0.06);display:flex;align-items:center;justify-content:space-between}
+      main{max-width:1100px;margin:28px auto;padding:0 20px}
+      h1{margin:0;font-size:20px}
+      .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;margin-top:18px}
+      .card{background:var(--card);padding:18px;border-radius:10px;box-shadow:0 6px 20px rgba(2,6,23,0.06);display:flex;flex-direction:column;gap:12px}
+      .card a{color:var(--accent);text-decoration:none;font-weight:600}
+      .small{color:#6b7280;font-size:13px}
+      .actions{display:flex;gap:8px}
+      button.ghost{background:transparent;border:1px solid #e6e9ef;padding:8px 10px;border-radius:8px;cursor:pointer}
+    </style>
+  </head>
+  <body>
+    <header>
+      <div>
+        <h1>Admin Dashboard</h1>
+        <div class="small" id="welcome"></div>
+      </div>
+      <div class="actions">
+        <a href="change-password.html" class="ghost">Change password</a>
+        <button id="logoutBtn" class="ghost">Sign out</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="grid">
+        <div class="card">
+          <h3>Add expert</h3>
+          <p class="small">Add new expert profiles to the system.</p>
+          <a href="add-expert.html">Open</a>
+        </div>
+
+        <div class="card">
+          <h3>View experts</h3>
+          <p class="small">Browse and manage expert listings.</p>
+          <a href="view-experts.html">Open</a>
+        </div>
+
+        <div class="card">
+          <h3>View users</h3>
+          <p class="small">See registered users and details.</p>
+          <a href="view-users.html">Open</a>
+        </div>
+
+        <div class="card">
+          <h3>Manage complaints</h3>
+          <p class="small">Review and act on user complaints.</p>
+          <a href="complaints.html">Open</a>
+        </div>
+
+        <div class="card">
+          <h3>App review</h3>
+          <p class="small">Review app submissions and updates.</p>
+          <a href="app-review.html">Open</a>
+        </div>
+
+        <div class="card">
+          <h3>Logs</h3>
+          <p class="small">View application logs and audit trails.</p>
+          <a href="logs.html">Open</a>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const welcome = document.getElementById('welcome');
+      const logoutBtn = document.getElementById('logoutBtn');
+      const user = localStorage.getItem('authenticated_user');
+      if (user) welcome.textContent = 'Signed in as ' + user;
+      else welcome.textContent = '';
+
+      logoutBtn.addEventListener('click', ()=>{
+        localStorage.removeItem('authenticated_user');
+        window.location.href = 'login.html';
+      });
+    </script>
+  </body>
+</html>

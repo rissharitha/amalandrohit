@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Register</title>
+    <style>
+      body{font-family:Segoe UI,Roboto,Arial;margin:0;display:flex;align-items:center;justify-content:center;height:100vh;background:#f5f7fb}
+      .card{background:#fff;padding:22px;border-radius:10px;box-shadow:0 6px 20px rgba(2,6,23,0.06);width:100%;max-width:420px}
+      label{display:block;margin-bottom:6px;font-size:13px}
+      input{width:100%;padding:10px;border-radius:8px;border:1px solid #e6e9ef;font-size:14px;margin-bottom:10px}
+      .actions{display:flex;gap:8px;align-items:center;margin-top:8px}
+      button.primary{background:#2563eb;color:#fff;border:0;padding:10px 14px;border-radius:8px;cursor:pointer}
+      button.ghost{background:transparent;border:1px solid #e6e9ef;padding:8px 12px;border-radius:8px;cursor:pointer}
+      .error{color:#b91c1c;font-size:13px;margin-top:8px}
+      .small{color:#6b7280;font-size:13px}
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <h2>Create an account</h2>
+      <p class="small">Register with a username and password.</p>
+
+      <form id="regForm">
+        <label for="username">Username</label>
+        <input id="username" name="username" type="text" autocomplete="username" />
+
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" autocomplete="new-password" />
+
+        <label for="confirm">Confirm password</label>
+        <input id="confirm" name="confirm" type="password" autocomplete="new-password" />
+
+        <div id="err" class="error" style="display:none"></div>
+
+        <div class="actions">
+          <button type="submit" class="primary">Register</button>
+          <a href="login.html"><button type="button" class="ghost">Back to login</button></a>
+        </div>
+      </form>
+    </main>
+
+    <script>
+      const form = document.getElementById('regForm');
+      const userInput = document.getElementById('username');
+      const passInput = document.getElementById('password');
+      const confirmInput = document.getElementById('confirm');
+      const err = document.getElementById('err');
+
+      function loadUsers(){ try{ return JSON.parse(localStorage.getItem('users')||'[]'); }catch(e){return []} }
+      function saveUsers(u){ localStorage.setItem('users', JSON.stringify(u)); }
+
+      form.addEventListener('submit', (e)=>{
+        e.preventDefault(); err.style.display='none';
+        const username = userInput.value.trim();
+        const password = passInput.value;
+        const confirm = confirmInput.value;
+
+        if (!username){ err.textContent='Enter a username.'; err.style.display='block'; return; }
+        if (!password){ err.textContent='Enter a password.'; err.style.display='block'; return; }
+        if (password.length < 4){ err.textContent='Password must be at least 4 characters.'; err.style.display='block'; return; }
+        if (password !== confirm){ err.textContent='Passwords do not match.'; err.style.display='block'; return; }
+
+        const users = loadUsers();
+        if (users.some(u=>u.username.toLowerCase() === username.toLowerCase())){
+          err.textContent = 'Username already exists.'; err.style.display='block'; return;
+        }
+
+        // Save user (demo only — don't store plaintext passwords in production)
+        users.push({ username, password });
+        saveUsers(users);
+
+        alert('Registration successful. Please sign in.');
+        window.location.href = 'login.html';
+      });
+    </script>
+  </body>
+</html>

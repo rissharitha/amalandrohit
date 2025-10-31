@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Login</title>
+		<style>
+			:root{--bg:#f3f6fb;--card:#ffffff;--accent:#2563eb;--muted:#6b7280}
+			html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;color:#111}
+			body{display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,var(--bg),#eef4ff)}
+			.card{width:100%;max-width:420px;background:var(--card);padding:28px;border-radius:12px;box-shadow:0 8px 30px rgba(17,24,39,0.08)}
+			h1{margin:0 0 8px;font-size:20px}
+			p.lead{margin:0 0 18px;color:var(--muted);font-size:13px}
+			label{display:block;font-size:13px;margin-bottom:6px}
+			.field{margin-bottom:14px}
+			input[type=text],input[type=password],input[type=email]{width:100%;padding:10px 12px;border:1px solid #e6e9ef;border-radius:8px;font-size:14px}
+			.row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+			.actions{display:flex;gap:8px;align-items:center}
+			button.primary{background:var(--accent);color:#fff;border:0;padding:10px 14px;border-radius:8px;cursor:pointer}
+			button.ghost{background:transparent;border:0;color:var(--accent);cursor:pointer}
+			.forgot{font-size:13px;color:var(--accent);text-decoration:none}
+			.error{color:#b91c1c;font-size:13px;margin-top:6px}
+
+				/* Modal styles removed - forgot flow uses separate page (forgot.html) */
+
+			/* small helpers */
+			.muted{color:var(--muted);font-size:13px}
+			.show{display:flex}
+			@media (max-width:420px){.card{padding:18px;border-radius:10px}}
+		</style>
+	</head>
+	<body>
+		<main class="card" aria-labelledby="login-title">
+			<h1 id="login-title">Welcome back</h1>
+			<p class="lead">Sign in to continue to your account.</p>
+
+			<form id="loginForm" novalidate>
+				<div class="field">
+					<label for="username">Username</label>
+					<input id="username" name="username" type="text" autocomplete="username" required aria-required="true" />
+					<div id="userError" class="error" aria-live="polite" style="display:none"></div>
+				</div>
+
+				<div class="field">
+					<label for="password">Password</label>
+					<input id="password" name="password" type="password" autocomplete="current-password" required aria-required="true" />
+					<div id="passError" class="error" aria-live="polite" style="display:none"></div>
+				</div>
+
+				<div class="row" style="margin-top:6px">
+					<div class="muted"><input id="remember" type="checkbox" /> <label for="remember" style="display:inline">Remember me</label></div>
+					<div><a href="forgot.html" id="forgotLink" class="forgot">Forgot password?</a></div>
+				</div>
+
+				<div style="margin-top:18px;display:flex;gap:10px;align-items:center">
+					<button type="submit" class="primary">Sign in</button>
+					<button type="button" id="demoBtn" class="ghost">Demo</button>
+				</div>
+			</form>
+
+			<p class="muted" style="margin-top:14px">No account? <a href="register.html" class="forgot">Register</a></p>
+		</main>
+
+		<!-- Forgot password now handled on forgot.html -->
+
+		<script>
+			// Small client-side validation and UI handlers
+			const loginForm = document.getElementById('loginForm');
+			const userInput = document.getElementById('username');
+			const passInput = document.getElementById('password');
+			const userError = document.getElementById('userError');
+			const passError = document.getElementById('passError');
+
+			loginForm.addEventListener('submit', function (e) {
+				e.preventDefault();
+				let valid = true;
+				userError.style.display = 'none';
+				passError.style.display = 'none';
+
+				if (!userInput.value.trim()) { userError.textContent = 'Please enter your username.'; userError.style.display = 'block'; valid = false; }
+				if (!passInput.value) { passError.textContent = 'Please enter your password.'; passError.style.display = 'block'; valid = false; }
+
+				if (!valid) { return; }
+
+				// Simple client-side login handling for demo purposes
+				// In production: replace with server authentication (POST to your API)
+				// Mark user as authenticated in localStorage and redirect to dashboard
+				localStorage.setItem('authenticated_user', userInput.value.trim());
+				// redirect to dashboard
+				window.location.href = 'dashboard.html';
+			});
+
+			// Demo button autofill
+			document.getElementById('demoBtn').addEventListener('click', () => {
+				userInput.value = 'demo';
+				passInput.value = 'demo';
+			});
+
+			// Forgot password now uses the separate forgot.html page; no in-page modal handlers required.
+		</script>
+	</body>
+</html>

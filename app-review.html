@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>App Review</title>
+    <style>
+      :root{--bg:#f5f7fb}
+      body{font-family:Segoe UI,Roboto,Arial;margin:0;background:var(--bg);min-height:100vh}
+      .wrap{max-width:1100px;margin:28px auto;padding:0 20px}
+      header{display:flex;justify-content:space-between;align-items:center}
+      .list{margin-top:14px;display:flex;flex-direction:column;gap:12px}
+      .item{background:#fff;padding:12px;border-radius:8px;box-shadow:0 6px 20px rgba(2,6,23,0.06)}
+      .meta{font-size:13px;color:#374151}
+      .actions{display:flex;gap:8px;margin-top:8px}
+      button.approve{background:#10b981;color:#fff;border:0;padding:6px 10px;border-radius:6px;cursor:pointer}
+      button.reject{background:#ef4444;color:#fff;border:0;padding:6px 10px;border-radius:6px;cursor:pointer}
+      .small{color:#6b7280;font-size:13px}
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div>
+          <h2>App Review</h2>
+          <div class="small">Review submitted apps and approve or reject</div>
+        </div>
+        <div><a href="dashboard.html">← Back to dashboard</a></div>
+      </header>
+
+      <section>
+        <div id="empty" class="small" style="display:none">No submissions found.</div>
+        <div id="list" class="list"></div>
+      </section>
+    </div>
+
+    <script>
+      function loadApps(){ try{ return JSON.parse(localStorage.getItem('app_submissions')||'[]'); }catch(e){return []} }
+      function saveApps(list){ localStorage.setItem('app_submissions', JSON.stringify(list)); }
+      function addLog(msg){ const logs = JSON.parse(localStorage.getItem('logs')||'[]'); logs.push({ts: new Date().toISOString(), msg}); localStorage.setItem('logs', JSON.stringify(logs)); }
+
+      const listEl = document.getElementById('list');
+      const empty = document.getElementById('empty');
+
+      function render(){
+        const apps = loadApps(); listEl.innerHTML = '';
+        if (!apps.length){ empty.style.display='block'; return; } else empty.style.display='none';
+        apps.slice().reverse().forEach(a=>{
+          const div = document.createElement('div'); div.className='item';
+          div.innerHTML = `
+            <strong>${a.name || 'Untitled'}</strong>
+            <div class="meta">Submitted by: ${a.submitter || 'unknown'} • ${new Date(a.createdAt).toLocaleString()}</div>
+            <p style="margin-top:8px">${a.description || ''}</p>
+            <div class="actions">
+              <button class="approve" data-approve="${a.id}">Approve</button>
+              <button class="reject" data-reject="${a.id}">Reject</button>
+              <button class="ghost" data-view="${a.id}">View</button>
+            </div>
+          `;
+          listEl.appendChild(div);
+        });
+      }
+
+      listEl.addEventListener('click',(e)=>{
+        const aid = e.target.getAttribute('data-approve');
+        const rid = e.target.getAttribute('data-reject');
+        const vid = e.target.getAttribute('data-view');
+        if (vid){ const apps = loadApps(); const a = apps.find(x=>x.id===vid); if (a) alert('Submission:\n'+JSON.stringify(a,null,2)); }
+        if (aid){ if (!confirm('Approve submission?')) return; const apps = loadApps(); const idx = apps.findIndex(x=>x.id===aid); if (idx>=0){ apps[idx].status='approved'; saveApps(apps); addLog('Approved app ' + aid); render(); alert('Approved'); } }
+        if (rid){ const reason = prompt('Reason for rejection (optional)'); const apps = loadApps(); const idx = apps.findIndex(x=>x.id===rid); if (idx>=0){ apps[idx].status='rejected'; apps[idx].reviewNote = reason||''; saveApps(apps); addLog('Rejected app ' + rid + (reason?(': '+reason):'')); render(); alert('Rejected'); } }
+      });
+
+      render();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>View Experts</title>
+    <style>
+      :root{--bg:#f5f7fb}
+      body{font-family:Segoe UI,Roboto,Arial;margin:0;background:var(--bg);min-height:100vh}
+      .wrap{max-width:1100px;margin:28px auto;padding:0 20px}
+      header{display:flex;justify-content:space-between;align-items:center}
+      .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-top:18px}
+      .card{background:#fff;padding:12px;border-radius:8px;box-shadow:0 6px 20px rgba(2,6,23,0.06)}
+      img.photo{width:100%;height:160px;object-fit:cover;border-radius:6px}
+      .meta{font-size:13px;color:#374151}
+      .actions{display:flex;gap:8px;margin-top:8px}
+      button.ghost{background:transparent;border:1px solid #e6e9ef;padding:6px 10px;border-radius:6px;cursor:pointer}
+      button.danger{background:#ef4444;color:#fff;border:0;padding:6px 10px;border-radius:6px;cursor:pointer}
+      .small{color:#6b7280;font-size:13px}
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div>
+          <h2>Experts</h2>
+          <div class="small">Manage expert profiles</div>
+        </div>
+        <div>
+          <a href="dashboard.html">← Back to dashboard</a>
+        </div>
+      </header>
+
+      <section>
+        <div id="emptyText" class="small" style="margin-top:12px;display:none">No experts yet.</div>
+        <div id="grid" class="grid"></div>
+      </section>
+    </div>
+
+    <script>
+      function loadExperts(){ try{ return JSON.parse(localStorage.getItem('experts')||'[]'); }catch(e){return []} }
+      function saveExperts(list){ localStorage.setItem('experts', JSON.stringify(list)); }
+      function addLog(msg){ const logs = JSON.parse(localStorage.getItem('logs')||'[]'); logs.push({ts: new Date().toISOString(), msg}); localStorage.setItem('logs', JSON.stringify(logs)); }
+
+      const grid = document.getElementById('grid');
+      const emptyText = document.getElementById('emptyText');
+
+      function render(){
+        const list = loadExperts();
+        grid.innerHTML = '';
+        if (!list.length){ emptyText.style.display='block'; return; } else emptyText.style.display='none';
+        list.slice().reverse().forEach(exp=>{
+          const el = document.createElement('div'); el.className='card';
+          el.innerHTML = `
+            ${exp.photo?'<img class="photo" src="'+exp.photo+'" alt="'+(exp.name||'')+'">':''}
+            <h3 style="margin:8px 0 4px">${exp.name||'—'}</h3>
+            <div class="meta">${exp.bio||''}</div>
+            <div class="small">${exp.email?('✉ ' + exp.email):''} ${exp.phone?(' • ☏ ' + exp.phone):''}</div>
+            <div class="actions">
+              <button class="ghost" data-id="${exp.id}">View</button>
+              <button class="danger" data-del="${exp.id}">Delete</button>
+            </div>
+          `;
+          grid.appendChild(el);
+        });
+      }
+
+      grid.addEventListener('click', (e)=>{
+        const id = e.target.getAttribute('data-id');
+        const del = e.target.getAttribute('data-del');
+        if (id){
+          const list = loadExperts(); const exp = list.find(x=>x.id===id);
+          if (exp){
+            alert('Expert:\n' + JSON.stringify({ name: exp.name, email: exp.email, phone: exp.phone, bio: exp.bio }, null, 2));
+          }
+        } else if (del){
+          if (!confirm('Delete this expert?')) return;
+          let list = loadExperts(); list = list.filter(x=>x.id!==del); saveExperts(list); addLog('Deleted expert ' + del); render();
+        }
+      });
+
+      render();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Verify OTP</title>
+    <style>
+      body{font-family:Segoe UI,Roboto,Arial;margin:0;display:flex;align-items:center;justify-content:center;height:100vh;background:#f5f7fb}
+      .card{background:#fff;padding:22px;border-radius:10px;box-shadow:0 6px 20px rgba(2,6,23,0.06);width:100%;max-width:420px}
+      label{display:block;margin-bottom:6px;font-size:13px}
+      input{width:100%;padding:10px;border-radius:8px;border:1px solid #e6e9ef;font-size:14px}
+      .row{display:flex;gap:8px;align-items:center;margin-top:12px}
+      button.primary{background:#2563eb;color:#fff;border:0;padding:10px 14px;border-radius:8px;cursor:pointer}
+      .muted{color:#6b7280;font-size:13px}
+      .error{color:#b91c1c;font-size:13px;margin-top:8px}
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <h2>Enter OTP</h2>
+      <p class="muted">Enter the 6-digit code sent to your email.</p>
+
+      <div style="margin-top:12px">
+        <label for="otp">OTP</label>
+        <input id="otp" maxlength="6" inputmode="numeric" />
+        <div id="err" class="error" style="display:none"></div>
+      </div>
+
+      <div class="row" style="justify-content:space-between">
+        <a href="forgot.html" class="muted">Back</a>
+        <div>
+          <button id="verifyBtn" class="primary">Verify</button>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      const otpInput = document.getElementById('otp');
+      const err = document.getElementById('err');
+      const verifyBtn = document.getElementById('verifyBtn');
+
+      const storedOtp = localStorage.getItem('forgot_otp');
+      const expires = Number(localStorage.getItem('forgot_otp_expires') || '0');
+      const email = localStorage.getItem('forgot_email') || '';
+
+      if (!storedOtp || !email){
+        alert('No OTP request found. Please start the forgot-password flow.');
+        window.location.href = 'forgot.html';
+      }
+
+      verifyBtn.addEventListener('click', ()=>{
+        err.style.display='none';
+        const val = otpInput.value.trim();
+        if (!val){ err.textContent='Enter the OTP.'; err.style.display='block'; return; }
+        if (Date.now() > expires){ err.textContent='OTP expired. Please request a new one.'; err.style.display='block'; return; }
+        if (val !== storedOtp){ err.textContent='Incorrect OTP.'; err.style.display='block'; return; }
+
+        // Verified
+        localStorage.setItem('verified_via','otp');
+        localStorage.setItem('verified_email', email);
+        // clear OTP so it can't be reused
+        localStorage.removeItem('forgot_otp');
+        localStorage.removeItem('forgot_otp_expires');
+        alert('OTP verified — you may now reset your password.');
+        window.location.href = 'change-password.html';
+      });
+    </script>
+  </body>
+</html>

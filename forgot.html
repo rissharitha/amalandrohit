@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Forgot password</title>
+    <style>
+      body{font-family:Segoe UI,Roboto,Arial;margin:0;display:flex;align-items:center;justify-content:center;height:100vh;background:#f5f7fb}
+      .card{background:#fff;padding:22px;border-radius:10px;box-shadow:0 6px 20px rgba(2,6,23,0.06);width:100%;max-width:480px}
+      label{display:block;margin-bottom:6px;font-size:13px}
+      input{width:100%;padding:10px;border-radius:8px;border:1px solid #e6e9ef;font-size:14px}
+      .row{display:flex;gap:8px;align-items:center;margin-top:12px}
+      button.primary{background:#2563eb;color:#fff;border:0;padding:10px 14px;border-radius:8px;cursor:pointer}
+      button.ghost{background:transparent;border:0;color:#2563eb;cursor:pointer}
+      .muted{color:#6b7280;font-size:13px}
+      .error{color:#b91c1c;font-size:13px;margin-top:8px}
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <h2>Forgot password</h2>
+      <p class="muted">Choose how you'd like to verify your account and reset your password.</p>
+
+      <form id="forgotForm">
+        <div style="margin-top:12px">
+          <label>Method</label>
+          <label><input type="radio" name="method" value="otp" checked /> Verify with OTP (sms/email)</label>
+          <label><input type="radio" name="method" value="email" /> Send password reset email</label>
+        </div>
+
+        <div style="margin-top:12px">
+          <label for="email">Email address</label>
+          <input id="email" type="email" autocomplete="email" />
+          <div id="err" class="error" style="display:none"></div>
+        </div>
+
+        <div class="row" style="justify-content:space-between">
+          <a href="login.html" class="muted">Back to sign in</a>
+          <div>
+            <button type="button" id="cancelBtn" class="ghost">Cancel</button>
+            <button type="submit" class="primary">Send</button>
+          </div>
+        </div>
+      </form>
+    </main>
+
+    <script>
+      // Simulated forgot-password flow. This is client-side demo only.
+      const form = document.getElementById('forgotForm');
+      const emailInput = document.getElementById('email');
+      const err = document.getElementById('err');
+      const cancel = document.getElementById('cancelBtn');
+
+      cancel.addEventListener('click', ()=>{ window.location.href='login.html'; });
+
+      function generateOtp(){ return String(Math.floor(100000 + Math.random()*900000)); }
+
+      form.addEventListener('submit', (e)=>{
+        e.preventDefault();
+        err.style.display='none';
+        const email = emailInput.value.trim();
+        if (!email){ err.textContent='Enter your email.'; err.style.display='block'; return; }
+        const method = document.querySelector('input[name="method"]:checked').value;
+
+        if (method === 'otp'){
+          // generate OTP, store it with expiry in localStorage, store email and redirect to verify
+          const otp = generateOtp();
+          const expires = Date.now() + 5*60*1000; // 5 minutes
+          localStorage.setItem('forgot_otp', otp);
+          localStorage.setItem('forgot_email', email);
+          localStorage.setItem('forgot_otp_expires', String(expires));
+          // Simulate sending OTP
+          alert('Simulated: OTP ' + otp + ' sent to ' + email + '. (In production send via SMS/Email)');
+          window.location.href = 'verify-otp.html';
+        } else {
+          // Email reset token flow (simulated): store a reset token and redirect to change-password
+          const token = 'token-' + Math.random().toString(36).slice(2,10);
+          localStorage.setItem('reset_token', token);
+          localStorage.setItem('reset_email', email);
+          // In production you would send an email with a link containing the token.
+          alert('Simulated: password reset email sent to ' + email + '. Follow the link to reset.');
+          // simulate user clicking the link by setting verified flag and redirect to change-password
+          localStorage.setItem('verified_via', 'email');
+          window.location.href = 'change-password.html';
+        }
+      });
+    </script>
+  </body>
+</html>

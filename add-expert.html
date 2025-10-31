@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Add Expert</title>
+    <style>
+      :root{--bg:#f5f7fb;--card:#fff;--accent:#2563eb}
+      body{font-family:Segoe UI,Roboto,Arial;margin:0;background:var(--bg);min-height:100vh;display:flex;align-items:center;justify-content:center}
+      .card{background:var(--card);padding:20px;border-radius:10px;max-width:720px;width:96%;box-shadow:0 8px 30px rgba(2,6,23,0.06)}
+      h2{margin:0 0 8px}
+      label{display:block;font-size:13px;margin:8px 0 6px}
+      input[type=text],input[type=email],input[type=tel],textarea{width:100%;padding:10px;border-radius:8px;border:1px solid #e6e9ef;font-size:14px}
+      textarea{min-height:100px;resize:vertical}
+      .row{display:flex;gap:12px;align-items:center;margin-top:12px}
+      .actions{display:flex;gap:8px;margin-top:14px}
+      button.primary{background:var(--accent);color:#fff;border:0;padding:10px 14px;border-radius:8px;cursor:pointer}
+      button.ghost{background:transparent;border:1px solid #e6e9ef;padding:8px 12px;border-radius:8px;cursor:pointer}
+      .small{color:#6b7280;font-size:13px}
+      .preview{width:120px;height:120px;border-radius:8px;object-fit:cover;border:1px dashed #e6e9ef}
+      .error{color:#b91c1c;font-size:13px;margin-top:8px}
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <h2>Add Expert</h2>
+      <p class="small">Fill the details and click Add to save (demo stores experts in localStorage).</p>
+
+      <form id="expertForm">
+        <label for="name">Full name</label>
+        <input id="name" name="name" type="text" placeholder="Jane Doe" required />
+
+        <label for="bio">Short bio</label>
+        <textarea id="bio" name="bio" placeholder="Expert in ..."></textarea>
+
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" placeholder="name@example.com" />
+
+        <label for="phone">Phone</label>
+        <input id="phone" name="phone" type="tel" placeholder="+1 555 555 5555" />
+
+        <label for="photo">Photo</label>
+        <div class="row">
+          <input id="photo" name="photo" type="file" accept="image/*" />
+          <img id="photoPreview" class="preview" alt="photo preview" src="" style="display:none" />
+        </div>
+
+        <div id="err" class="error" style="display:none"></div>
+
+        <div class="actions">
+          <button type="submit" class="primary">Add Expert</button>
+          <a href="dashboard.html"><button type="button" class="ghost">Cancel</button></a>
+        </div>
+      </form>
+    </main>
+
+    <script>
+      const form = document.getElementById('expertForm');
+      const nameInput = document.getElementById('name');
+      const bioInput = document.getElementById('bio');
+      const emailInput = document.getElementById('email');
+      const phoneInput = document.getElementById('phone');
+      const photoInput = document.getElementById('photo');
+      const preview = document.getElementById('photoPreview');
+      const err = document.getElementById('err');
+
+      // show image preview when a file is selected
+      photoInput.addEventListener('change', ()=>{
+        const file = photoInput.files && photoInput.files[0];
+        if (!file){ preview.style.display='none'; preview.src=''; return; }
+        const reader = new FileReader();
+        reader.onload = (e)=>{ preview.src = e.target.result; preview.style.display = 'block'; };
+        reader.readAsDataURL(file);
+      });
+
+      function loadExperts(){
+        try{ return JSON.parse(localStorage.getItem('experts')||'[]'); }catch(e){return []}
+      }
+
+      function saveExperts(list){ localStorage.setItem('experts', JSON.stringify(list)); }
+
+      form.addEventListener('submit', async (e)=>{
+        e.preventDefault(); err.style.display='none';
+        const name = nameInput.value.trim();
+        if (!name){ err.textContent='Name is required.'; err.style.display='block'; return; }
+
+        // read photo as data URL (if present)
+        let photoData = '';
+        const file = photoInput.files && photoInput.files[0];
+        if (file){
+          photoData = await new Promise((res)=>{
+            const r = new FileReader(); r.onload = (ev)=>res(ev.target.result); r.readAsDataURL(file);
+          });
+        }
+
+        const expert = {
+          id: 'exp-' + Date.now(),
+          name,
+          bio: bioInput.value.trim(),
+          email: emailInput.value.trim(),
+          phone: phoneInput.value.trim(),
+          photo: photoData,
+          createdAt: new Date().toISOString()
+        };
+
+        const list = loadExperts();
+        list.push(expert);
+        saveExperts(list);
+
+        alert('Expert added (demo). Total experts: ' + list.length);
+        // optionally redirect to view-experts
+        window.location.href = 'view-experts.html';
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Logs</title>
+    <style>
+      :root{--bg:#f5f7fb}
+      body{font-family:Segoe UI,Roboto,Arial;margin:0;background:var(--bg);min-height:100vh}
+      .wrap{max-width:1100px;margin:28px auto;padding:0 20px}
+      header{display:flex;justify-content:space-between;align-items:center}
+      .card{background:#fff;padding:12px;border-radius:8px;box-shadow:0 6px 20px rgba(2,6,23,0.06)}
+      .log{font-family:monospace;font-size:13px;border-bottom:1px solid #f1f5f9;padding:8px 0}
+      .controls{display:flex;gap:8px}
+      .small{color:#6b7280;font-size:13px}
+      button.ghost{background:transparent;border:1px solid #e6e9ef;padding:8px 10px;border-radius:8px;cursor:pointer}
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div>
+          <h2>Logs</h2>
+          <div class="small">Application activity logs (client-side demo)</div>
+        </div>
+        <div class="controls">
+          <a href="dashboard.html">← Back to dashboard</a>
+          <button id="clearBtn" class="ghost">Clear logs</button>
+        </div>
+      </header>
+
+      <section style="margin-top:12px">
+        <div id="noLogs" class="small" style="display:none">No logs available.</div>
+        <div id="list" class="card"></div>
+      </section>
+    </div>
+
+    <script>
+      function loadLogs(){ try{ return JSON.parse(localStorage.getItem('logs')||'[]'); }catch(e){return []} }
+      function saveLogs(list){ localStorage.setItem('logs', JSON.stringify(list)); }
+
+      const listEl = document.getElementById('list');
+      const noLogs = document.getElementById('noLogs');
+      const clearBtn = document.getElementById('clearBtn');
+
+      function render(){ const logs = loadLogs(); listEl.innerHTML=''; if (!logs.length){ noLogs.style.display='block'; return; } noLogs.style.display='none';
+        logs.slice().reverse().forEach(l=>{ const d = document.createElement('div'); d.className='log'; d.textContent = `[${new Date(l.ts).toLocaleString()}] ${l.msg}`; listEl.appendChild(d); }); }
+
+      clearBtn.addEventListener('click', ()=>{ if (!confirm('Clear all logs?')) return; saveLogs([]); render(); });
+      render();
+    </script>
+  </body>
+</html>

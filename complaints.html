@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Manage Complaints</title>
+    <style>
+      :root{--bg:#f5f7fb}
+      body{font-family:Segoe UI,Roboto,Arial;margin:0;background:var(--bg);min-height:100vh}
+      .wrap{max-width:1100px;margin:28px auto;padding:0 20px}
+      header{display:flex;justify-content:space-between;align-items:center}
+      .list{margin-top:14px;display:flex;flex-direction:column;gap:12px}
+      .item{background:#fff;padding:12px;border-radius:8px;box-shadow:0 6px 20px rgba(2,6,23,0.06)}
+      .meta{font-size:13px;color:#374151}
+      .actions{display:flex;gap:8px;margin-top:8px}
+      button.primary{background:#2563eb;color:#fff;border:0;padding:6px 10px;border-radius:6px;cursor:pointer}
+      button.ghost{background:transparent;border:1px solid #e6e9ef;padding:6px 10px;border-radius:6px;cursor:pointer}
+      button.danger{background:#ef4444;color:#fff;border:0;padding:6px 10px;border-radius:6px;cursor:pointer}
+      .small{color:#6b7280;font-size:13px}
+      .replyBox{margin-top:8px}
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div>
+          <h2>Complaints</h2>
+          <div class="small">View and reply to user complaints</div>
+        </div>
+        <div><a href="dashboard.html">← Back to dashboard</a></div>
+      </header>
+
+      <section>
+        <div id="empty" class="small" style="display:none">No complaints found.</div>
+        <div id="list" class="list"></div>
+      </section>
+    </div>
+
+    <script>
+      function loadComplaints(){ try{ return JSON.parse(localStorage.getItem('complaints')||'[]'); }catch(e){return []} }
+      function saveComplaints(list){ localStorage.setItem('complaints', JSON.stringify(list)); }
+      function addLog(msg){ const logs = JSON.parse(localStorage.getItem('logs')||'[]'); logs.push({ts: new Date().toISOString(), msg}); localStorage.setItem('logs', JSON.stringify(logs)); }
+
+      const listEl = document.getElementById('list');
+      const empty = document.getElementById('empty');
+
+      function render(){
+        const complaints = loadComplaints();
+        listEl.innerHTML = '';
+        if (!complaints.length){ empty.style.display='block'; return; } else empty.style.display='none';
+
+        complaints.slice().reverse().forEach(c => {
+          const div = document.createElement('div'); div.className='item';
+          div.innerHTML = `
+            <strong>${c.subject || 'Complaint'}</strong>
+            <div class="meta">By: ${c.email || 'unknown'} • ${new Date(c.createdAt).toLocaleString()}</div>
+            <p style="margin-top:8px">${c.message || ''}</p>
+            <div class="small">Status: ${c.status || 'open'} ${c.reply?(' • Replied') : ''}</div>
+            <div class="actions">
+              <button class="primary" data-reply="${c.id}">Send reply</button>
+              <button class="ghost" data-view="${c.id}">View</button>
+              <button class="danger" data-del="${c.id}">Delete</button>
+            </div>
+            <div class="replyBox" id="reply-${c.id}" style="display:none">
+              <textarea id="replyText-${c.id}" rows="3" style="width:100%;padding:8px;border:1px solid #e6e9ef;border-radius:6px"></textarea>
+              <div style="margin-top:8px"><button class="primary" data-send="${c.id}">Send</button> <button class="ghost" data-cancel="${c.id}">Cancel</button></div>
+            </div>
+          `;
+          listEl.appendChild(div);
+        });
+      }
+
+      listEl.addEventListener('click', (e)=>{
+        const idReply = e.target.getAttribute('data-reply');
+        const idView = e.target.getAttribute('data-view');
+        const idDel = e.target.getAttribute('data-del');
+        const idSend = e.target.getAttribute('data-send');
+        const idCancel = e.target.getAttribute('data-cancel');
+
+        if (idView){
+          const complaints = loadComplaints(); const c = complaints.find(x=>x.id===idView);
+          if (c) alert('Complaint details:\n' + JSON.stringify(c, null, 2));
+        }
+
+        if (idReply){ document.getElementById('reply-' + idReply).style.display = 'block'; }
+
+        if (idCancel){ document.getElementById('reply-' + idCancel).style.display = 'none'; }
+
+        if (idSend){
+          const txt = document.getElementById('replyText-' + idSend).value.trim();
+          if (!txt){ alert('Enter a reply'); return; }
+          const complaints = loadComplaints();
+          const idx = complaints.findIndex(x=>x.id===idSend);
+          if (idx === -1) return;
+          complaints[idx].reply = txt;
+          complaints[idx].status = 'replied';
+          complaints[idx].repliedAt = new Date().toISOString();
+          saveComplaints(complaints);
+          addLog('Replied to complaint ' + idSend);
+          alert('Reply sent (simulated).');
+          render();
+        }
+
+        if (idDel){ if (!confirm('Delete complaint?')) return; let list = loadComplaints(); list = list.filter(x=>x.id!==idDel); saveComplaints(list); addLog('Deleted complaint ' + idDel); render(); }
+      });
+
+      render();
+    </script>
+  </body>
+</html>
